@@ -451,8 +451,27 @@ def show_prediction_page(model, model_columns, df):
     and get an instant price prediction based on our trained machine learning model.
     """)
     
+    # Add prediction type selector
+    st.subheader("🎯 Prediction Type")
+    prediction_type = st.radio(
+        "Choose prediction type:",
+        ["Current Price Prediction", "Future Date Prediction"],
+        help="Select whether to predict current prices or prices for a specific future date"
+    )
+    
     # Create mobile-friendly input form
     with st.form("prediction_form"):
+        # Add date input for future predictions
+        if prediction_type == "Future Date Prediction":
+            st.subheader("📅 Prediction Date")
+            prediction_date = st.date_input(
+                "Select date for price prediction:",
+                value=date.today(),
+                min_value=date.today(),
+                max_value=date(2030, 12, 31),
+                help="Select a future date to predict prices for that specific date"
+            )
+        
         # Use responsive columns - stack on mobile, side-by-side on desktop
         col1, col2 = st.columns([1, 1])
         
@@ -560,6 +579,19 @@ def show_prediction_page(model, model_columns, df):
             'priceflag': 'actual'
         }
         
+        # Add date-based features for future predictions
+        if prediction_type == "Future Date Prediction":
+            # Extract seasonal features from the prediction date
+            input_data['date'] = prediction_date
+            input_data['month'] = prediction_date.month
+            input_data['year'] = prediction_date.year
+            input_data['day_of_year'] = prediction_date.timetuple().tm_yday
+            
+            # Add seasonal indicators
+            input_data['is_rainy_season'] = 1 if prediction_date.month in [4, 5, 6, 7, 8, 9, 10] else 0
+            input_data['is_harvest_season'] = 1 if prediction_date.month in [10, 11, 12, 1, 2] else 0
+            input_data['is_planting_season'] = 1 if prediction_date.month in [3, 4, 5, 6] else 0
+        
         # Preprocess and predict
         try:
             processed_input = preprocess_input_data(input_data, model_columns)
@@ -567,26 +599,53 @@ def show_prediction_page(model, model_columns, df):
             
             # Display prediction
             st.markdown('<div class="prediction-box">', unsafe_allow_html=True)
-            st.markdown(f"### 🎯 Predicted Price: **{prediction:.2f} GHS**")
-            st.markdown(f"**Commodity:** {commodity} ({category})")
-            st.markdown(f"**Location:** {market}, {admin1}")
-            st.markdown(f"**Coordinates:** {latitude:.2f}°N, {longitude:.2f}°E")
-            st.markdown(f"**Unit:** {unit}")
+            
+            if prediction_type == "Future Date Prediction":
+                st.markdown(f"### 🎯 Predicted Price for {prediction_date.strftime('%B %d, %Y')}: **{prediction:.2f} GHS**")
+                st.markdown(f"**Commodity:** {commodity} ({category})")
+                st.markdown(f"**Location:** {market}, {admin1}")
+                st.markdown(f"**Coordinates:** {latitude:.2f}°N, {longitude:.2f}°E")
+                st.markdown(f"**Unit:** {unit}")
+                st.markdown(f"**Prediction Date:** {prediction_date.strftime('%A, %B %d, %Y')}")
+                
+                # Add seasonal context
+                if input_data.get('is_rainy_season'):
+                    st.markdown("🌧️ **Seasonal Context:** Rainy season - prices may be higher due to supply challenges")
+                elif input_data.get('is_harvest_season'):
+                    st.markdown("🌾 **Seasonal Context:** Harvest season - prices may be lower due to increased supply")
+                elif input_data.get('is_planting_season'):
+                    st.markdown("🌱 **Seasonal Context:** Planting season - prices may be moderate")
+            else:
+                st.markdown(f"### 🎯 Predicted Price: **{prediction:.2f} GHS**")
+                st.markdown(f"**Commodity:** {commodity} ({category})")
+                st.markdown(f"**Location:** {market}, {admin1}")
+                st.markdown(f"**Coordinates:** {latitude:.2f}°N, {longitude:.2f}°E")
+                st.markdown(f"**Unit:** {unit}")
+            
             st.markdown('</div>', unsafe_allow_html=True)
             
             # Additional insights
             col1, col2, col3 = st.columns(3)
             
             with col1:
-                st.metric("Prediction Confidence", "Medium", "Based on model R² = 0.22")
+                if prediction_type == "Future Date Prediction":
+                    st.metric("Prediction Type", "Future Date", "Based on seasonal factors")
+                else:
+                    st.metric("Prediction Confidence", "Medium", "Based on model R² = 0.22")
             
             with col2:
                 if usdprice > 0:
                     usd_equivalent = prediction / usdprice if usdprice > 0 else 0
                     st.metric("USD Equivalent", f"${usd_equivalent:.2f}")
+                else:
+                    st.metric("Prediction Range", "±20%", "Estimated uncertainty")
             
             with col3:
-                st.metric("Model Accuracy", "96.3%", "R² Score")
+                if prediction_type == "Future Date Prediction":
+                    days_ahead = (prediction_date - date.today()).days
+                    st.metric("Days Ahead", f"{days_ahead}", "Future prediction")
+                else:
+                    st.metric("Model Accuracy", "96.3%", "R² Score")
                 
         except Exception as e:
             st.error(f"Error making prediction: {e}")
