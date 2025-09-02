@@ -198,7 +198,7 @@ def preprocess_input_data(input_data, model_columns):
         if col in df_input.columns:
             df_input = pd.get_dummies(df_input, columns=[col], dummy_na=False)
     
-    # Add default latitude and longitude if not present
+    # Use provided latitude and longitude or add defaults if not present
     if 'latitude' not in df_input.columns:
         df_input['latitude'] = 6.68  # Default latitude for Ghana
     if 'longitude' not in df_input.columns:
@@ -498,6 +498,32 @@ def show_prediction_page(model, model_columns, df):
                 admin2 = st.selectbox("District", admin2_options)
             else:
                 admin2 = st.text_input("District", value="KMA")
+            
+            # Geographic coordinates
+            st.subheader("🌍 Geographic Position")
+            col_lat, col_lon = st.columns(2)
+            
+            with col_lat:
+                latitude = st.number_input(
+                    "Latitude", 
+                    value=6.68, 
+                    min_value=-90.0, 
+                    max_value=90.0, 
+                    step=0.01, 
+                    format="%.2f",
+                    help="Geographic latitude coordinate (-90 to 90)"
+                )
+            
+            with col_lon:
+                longitude = st.number_input(
+                    "Longitude", 
+                    value=-1.62, 
+                    min_value=-180.0, 
+                    max_value=180.0, 
+                    step=0.01, 
+                    format="%.2f",
+                    help="Geographic longitude coordinate (-180 to 180)"
+                )
         
         with col2:
             # Commodity information
@@ -536,7 +562,7 @@ def show_prediction_page(model, model_columns, df):
         submitted = st.form_submit_button("🔮 Predict Price", use_container_width=True, type="secondary")
     
     if submitted:
-        # Prepare input data with default coordinates
+        # Prepare input data with user-provided coordinates
         input_data = {
             'market': market,
             'admin1': admin1,
@@ -547,6 +573,8 @@ def show_prediction_page(model, model_columns, df):
             'unit': unit,
             'usdprice': usdprice,
             'commodity_id': commodity_id,
+            'latitude': latitude,
+            'longitude': longitude,
             'currency': 'GHS',
             'priceflag': 'actual'
         }
@@ -576,6 +604,7 @@ def show_prediction_page(model, model_columns, df):
                 st.markdown(f"### 🎯 Predicted Price for {prediction_date.strftime('%B %d, %Y')}: **{prediction:.2f} GHS**")
                 st.markdown(f"**Commodity:** {commodity} ({category})")
                 st.markdown(f"**Location:** {market}, {admin1}")
+                st.markdown(f"**Coordinates:** {latitude:.2f}°N, {longitude:.2f}°E")
                 st.markdown(f"**Unit:** {unit}")
                 st.markdown(f"**Prediction Date:** {prediction_date.strftime('%A, %B %d, %Y')}")
                 
@@ -590,6 +619,7 @@ def show_prediction_page(model, model_columns, df):
                 st.markdown(f"### 🎯 Predicted Price: **{prediction:.2f} GHS**")
                 st.markdown(f"**Commodity:** {commodity} ({category})")
                 st.markdown(f"**Location:** {market}, {admin1}")
+                st.markdown(f"**Coordinates:** {latitude:.2f}°N, {longitude:.2f}°E")
                 st.markdown(f"**Unit:** {unit}")
             
             st.markdown('</div>', unsafe_allow_html=True)
