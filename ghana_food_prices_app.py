@@ -636,7 +636,7 @@ def show_prediction_page(model, model_columns, df):
             with col2:
                 if usdprice > 0:
                     usd_equivalent = prediction / usdprice if usdprice > 0 else 0
-                    st.metric("USD Equivalent", f"${usd_equivalent:.2f}")
+                    st.metric("USD Equivalent increment", f"${usd_equivalent:.2f}")
                 else:
                     st.metric("Prediction Range", "±20%", "Estimated uncertainty")
             
