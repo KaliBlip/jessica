@@ -8,7 +8,7 @@ This application uses the **Ghana Food Prices** dataset from the World Food Prog
 
 - **Source**: World Food Programme Price Database
 - **Coverage**: Ghana food markets
-- **Time Period**: Historical data from 2006 onwards
+- **Time Period**: Historical data from 2006 to 2023
 - **Updates**: Weekly updates with monthly data
 - **Currency**: Ghanaian Cedi (GHS)
 - **Food Items**: Maize, rice, beans, fish, sugar, and other commodities
