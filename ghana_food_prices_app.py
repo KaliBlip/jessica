@@ -340,13 +340,13 @@ def main():
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        home_active = st.button("🏠\nHome", key="home_tab", help="Home")
+        home_active = st.button("🏠\n HOME", key="home_tab", help="Home")
     with col2:
-        prediction_active = st.button("🔮\nPredict", key="prediction_tab", help="Price Prediction")
+        prediction_active = st.button("🔮\n PREDICT   ", key="prediction_tab", help="Price Prediction")
     with col3:
-        analysis_active = st.button("📊\nAnalysis", key="analysis_tab", help="Data Analysis")
+        analysis_active = st.button("📊\n ANALYSIS", key="analysis_tab", help="Data Analysis")
     with col4:
-        trends_active = st.button("📈\nTrends", key="trends_tab", help="Market Trends")
+        trends_active = st.button("📈\n TRENDS", key="trends_tab", help="Market Trends")
     
     st.markdown('</div>', unsafe_allow_html=True)
     
