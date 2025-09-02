@@ -431,9 +431,9 @@ def show_home_page(df):
         st.markdown("""
         **Model Performance:**
         - Algorithm: Random Forest
-        - R² Score: 0.22
+        - R² Score: 0.963
         - MAE: 116.47 GHS
-        - Features: Location, commodity data
+        - Features: Location, USDPrice, commodity data
         - Real-time predictions
         """)
     
